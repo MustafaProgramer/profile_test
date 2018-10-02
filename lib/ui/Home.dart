@@ -1,21 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:profile_test/ui/widgets/common_scaffold.dart';
+import './LocationList.dart';
 
 class ProfileTwoPage extends StatelessWidget {
   Size deviceSize;
+  var cont;
   TextEditingController _email = new TextEditingController();
   TextEditingController _phone = new TextEditingController();
   TextEditingController _conpany = new TextEditingController();
   TextEditingController _locations = new TextEditingController();
 
+// --------------------------- profile Header (banner + name +profile pic, etc) ----------------------
   Widget profileHeader() => Container(
-        height: deviceSize.height / 4,
+        decoration: new BoxDecoration(
+            image: new DecorationImage(
+          image: new NetworkImage(
+              "http://sc01.alicdn.com/kf/UT8ECKhXzJaXXagOFbXh/200043761/UT8ECKhXzJaXXagOFbXh.jpg"),
+          fit: BoxFit.cover,
+        )),
+        height: deviceSize.height / 3,
         width: double.infinity,
-        color: Colors.black,
+        //color: Colors.black,
         child: Padding(
-          padding: const EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(0.0),
           child: Card(
-            color: Colors.black,
+            color: Colors.white12,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
@@ -26,7 +35,7 @@ class ProfileTwoPage extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 40.0,
                     backgroundImage: NetworkImage(
-                        "https://png2.kisspng.com/20180219/rje/kisspng-avatar-icon-fashion-men-vector-avatar-5a8b58502f1ae5.101219951519081552193.png"),
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjEPBnSuANA7WI9edlw0KrNjx892C-46LdnGZgtj9D8zLKduwm"),
                   ),
                 ),
                 Text(
@@ -35,16 +44,36 @@ class ProfileTwoPage extends StatelessWidget {
                 ),
                 Text(
                   "Amazon Driver",
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 )
               ],
             ),
           ),
         ),
       );
+  // ----------------- Info widget (Email, phone, company, Locations) -----------------------------------
+  
 
-  Widget info() => Container(
-      padding: EdgeInsets.all(80.0),
+
+
+// -------------------- building the scaffold -----------------------------
+  @override
+  Widget build(BuildContext context) {
+    _email.text = "ali@gmail.com";
+    _phone.text = "+97334356868";
+    _conpany.text = "Al Marhoon";
+    _locations.text = "Manama , Isa Town";
+    cont = context;
+_editLocations()
+{
+  MaterialPageRoute route = MaterialPageRoute(
+    builder: (context)=> Locations()
+  );
+  Navigator.push(context, route);
+}
+Widget info() => Container(
+      padding: EdgeInsets.all(65.0),
       child: Column(
         children: <Widget>[
           new TextField(
@@ -74,19 +103,23 @@ class ProfileTwoPage extends StatelessWidget {
               color: Colors.blue,
             )),
           ),
-          new TextField(
-            enabled: false,
-            controller: _locations,
-            decoration: new InputDecoration(
-                icon: Icon(
-              Icons.directions_bus,
-              color: Colors.blue,
-            )),
-          )
+          new InkWell(
+              onTap: () {
+               _editLocations();
+              },
+              child: new TextField(
+                enabled: false,
+                controller: _locations,
+                decoration: new InputDecoration(
+                    icon: Icon(
+                  Icons.directions_bus,
+                  color: Colors.blue,
+                )),
+              ))
         ],
       ));
 
-  Widget bodyData() => SingleChildScrollView(
+        Widget bodyData() => SingleChildScrollView(
         child: Column(
           children: <Widget>[
             profileHeader(),
@@ -97,13 +130,7 @@ class ProfileTwoPage extends StatelessWidget {
           ],
         ),
       );
-
-  @override
-  Widget build(BuildContext context) {
-    _email.text = "D@m.com";
-    _phone.text = "+97334356868";
-    _conpany.text = "Al Marhoon";
-    _locations.text = "Manama , Isa Town";
+// ------------------------- on click funcitons ---------------------------
     deviceSize = MediaQuery.of(context).size;
     return CommonScaffold(
       appTitle: "Profile",
@@ -112,3 +139,6 @@ class ProfileTwoPage extends StatelessWidget {
     );
   }
 }
+/*
+
+*/
