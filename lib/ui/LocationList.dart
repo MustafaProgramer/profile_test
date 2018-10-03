@@ -9,108 +9,141 @@ class Locations extends StatefulWidget {
 }
 
 class LocationState extends State<Locations> {
-   var _list = <Widget>[new Padding(padding: EdgeInsets.only(top: 30.0))];
-  List _SearchRes = null;
+  void initState() {
+    if (_Areas.isEmpty)
+      for (int i = 0; i < 30; i++) {
+        // print(_list);
+        _Areas.add({"Name": "Area Number " + i.toString(), "value": false});
+      }
+    _createList();
+  }
+
+// ---------------- variable declerations --------------
+  List _SearchRes = [];
+  bool _notFound=false;
   var checkboxValue = [];
   var _Areas = [];
+  var _list = <Widget>[new Padding(padding: EdgeInsets.only(top: 30.0))];
   TextEditingController _searchInput = new TextEditingController();
-   _searchList() {
-      
-      for (int i = 0; i < _SearchRes.length; i++) {
-        _list=[];
-        _list.add(InkWell(
-            onTap: () {
-              setState(() {
-                checkboxValue[i] = !checkboxValue[i];
-                print(checkboxValue[i]);
-              });
-            },
-            child: new Row(
-              children: <Widget>[
-                new Checkbox(
-                    onChanged: (bool value) {
-                      setState(() {
-                        checkboxValue[i] = value;
-                      });
-                    },
-                    value: checkboxValue[i]),
-                new Text(_SearchRes[i]),
-              ],
-            )));
+  var _sIndex;
 
-        _list.add(new Padding(
-          padding: EdgeInsets.all(20.0),
-        ));
-      }
-    }
+// ---------------- Search bar ---------------------------
 
-Widget searchBar() => new Card(
-            child: new TextField(
-          onChanged: (value) {
-            setState(() {
-             
-              if(value.isNotEmpty)
-              {
-               _SearchRes = _Areas.where((i) => i == value).toList();
-               _searchList();
-               print(_SearchRes);
+  Widget searchBar() => new Card(
+          child: new TextField(
+        onChanged: (v) {
+          if (v.isNotEmpty) {
+            _SearchRes = [];
+            for (int i = 0; i < _Areas.length; i++) {
+              if (_Areas[i]["Name"].toLowerCase().contains(v.toLowerCase())) {
+                _SearchRes.add({
+                  "Name": _Areas[i]["Name"],
+                  "value": _Areas[i]["value"],
+                  "Index": i
+                });
               }
+            }
+            if (_SearchRes.isEmpty) {
+              _notFound=true;
+              
+              }
+            setState(() {
+              _searchList();
+            });
+          } else
+            setState(() {
+              _SearchRes = [];
+              _notFound=false;
+              _createList();
+            });
+        },
+        controller: _searchInput,
+        decoration: InputDecoration(
+          icon: Icon(Icons.search),
+          hintText: "Search for area..",
+        ),
+      ));
+
+// ------------------- Creating the list of contries ------------------
+
+  _createList() {
+    _list = <Widget>[];
+
+    for (int i = 0; i < _Areas.length; i++) {
+      _list.add(InkWell(
+          onTap: () {
+            setState(() {
+              _Areas[i]["value"] = !_Areas[i]["value"];
+              print(_Areas[i]["value"]);
             });
           },
-          controller: _searchInput,
-          decoration: InputDecoration(
-            icon: Icon(Icons.search),
-            hintText: "Search for area..",
-          ),
-        ));
+          child: new Row(
+            children: <Widget>[
+              new Checkbox(
+                  onChanged: (bool value) {
+                    setState(() {
+                      _Areas[i]["value"] = value;
+                    });
+                  },
+                  value: _Areas[i]["value"]),
+              new Text(_Areas[i]["Name"]),
+            ],
+          )));
+
+      _list.add(new Padding(
+        padding: EdgeInsets.all(20.0),
+      ));
+    }
+  }
+
+  //---------------- Creating Search list -----------------------
+
+  _searchList() {
+    _list = [];
+    for (int i = 0; i < _SearchRes.length; i++) {
+      //print(_SearchRes);
+
+      _list.add(InkWell(
+          onTap: () {
+            setState(() {
+              _SearchRes[i]["value"] = !_SearchRes[i]["value"];
+              var index = _SearchRes[i]["Index"];
+              _Areas[index]["value"] = _SearchRes[i]["value"];
+
+              //_createList();
+            });
+          },
+          child: new Row(
+            children: <Widget>[
+              new Checkbox(
+                  onChanged: (bool value) {
+                    setState(() {
+                      _SearchRes[i]["value"] = !_SearchRes[i]["value"];
+                      var index = _SearchRes[i]["Index"];
+                      _Areas[index]["value"] = !_SearchRes[i]["value"];
+                      print(_SearchRes[i]["value"]);
+                    });
+                  },
+                  value: _SearchRes[i]["value"]),
+              new Text(_SearchRes[i]["Name"]),
+            ],
+          )));
+
+      _list.add(new Padding(
+        padding: EdgeInsets.all(20.0),
+      ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    
-   
-    _createList() {
-      _Areas=[];
-      for (int i = 0; i < 30; i++) {
-       // print(_list);
-        checkboxValue.add(false);
-        _Areas.add("Area Number " + i.toString());
-        _list.add(InkWell(
-            onTap: () {
-              setState(() {
-                checkboxValue[i] = !checkboxValue[i];
-                print(checkboxValue[i]);
-              });
-            },
-            child: new Row(
-              children: <Widget>[
-                new Checkbox(
-                    onChanged: (bool value) {
-                      setState(() {
-                        checkboxValue[i] = value;
-                      });
-                    },
-                    value: checkboxValue[i]),
-                new Text(_Areas[i]),
-              ],
-            )));
-
-        _list.add(new Padding(
-          padding: EdgeInsets.all(20.0),
-        ));
-      }
+    _createList();
+    if (_SearchRes.isNotEmpty||_notFound) {
+      
+      _searchList();
     }
 
-       
-    _createList();
     Widget data() => Expanded(child: new ListView(children: _list));
-
-    
-/*new ListView.builder(
-      itemCount: _list.length,
-      itemBuilder: (_,i){
-             return new Text("data");
-      },*/
-    
 
     return Scaffold(
         appBar: new AppBar(
