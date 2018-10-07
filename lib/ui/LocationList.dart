@@ -44,13 +44,11 @@ class LocationState extends State<Locations> {
       });
       if (_Areas.isEmpty)
         for (int i = 0; i < cities.length; i++) {
-          
           _Areas.add({"Name": cities[i]["featureName"], "value": false});
         }
       _createList();
       setState(() {
         dex = 1;
-        
       });
     });
   }
@@ -95,8 +93,19 @@ class LocationState extends State<Locations> {
         },
         controller: _searchInput,
         decoration: InputDecoration(
+          
           icon: Icon(Icons.search),
           hintText: "Search for area..",
+          suffix:  IconButton(
+              icon: Icon(Icons.clear),
+              onPressed: () {
+                _searchInput.clear();
+                setState(() {
+                   _SearchRes = [];
+              _notFound = false;
+              _createList();
+                });
+              }),
         ),
       ));
 
