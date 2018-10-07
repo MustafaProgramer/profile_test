@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:profile_test/ui/widgets/common_scaffold.dart';
 import './LocationList.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import './path.dart';
 class ProfileTwoPage extends StatelessWidget {
   Size deviceSize;
   var cont;
@@ -39,7 +40,7 @@ class ProfileTwoPage extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "Pawan Kumar",
+                  "Ali Ahmed",
                   style: TextStyle(color: Colors.white, fontSize: 20.0),
                 ),
                 Text(
@@ -60,11 +61,25 @@ class ProfileTwoPage extends StatelessWidget {
 // -------------------- building the scaffold -----------------------------
   @override
   Widget build(BuildContext context) {
+    initState()
+    {
+
+
+    }
     _email.text = "ali@gmail.com";
     _phone.text = "+97334356868";
     _conpany.text = "Al Marhoon";
     _locations.text = "Manama , Isa Town";
     cont = context;
+    _path()
+    {
+      MaterialPageRoute route = MaterialPageRoute(
+    builder: (context)=>FlutterDemo(storage: CounterStorage())
+  );
+    Navigator.push(context, route);
+      
+    }
+    
 _editLocations()
 {
   MaterialPageRoute route = MaterialPageRoute(
@@ -94,7 +109,9 @@ Widget info() => Container(
               color: Colors.blue,
             )),
           ),
-          new TextField(
+          new InkWell(
+            onTap: _path,
+            child:new TextField(
             enabled: false,
             controller: _conpany,
             decoration: new InputDecoration(
@@ -103,6 +120,8 @@ Widget info() => Container(
               color: Colors.blue,
             )),
           ),
+          ),
+          
           new InkWell(
               onTap: () {
                _editLocations();

@@ -1,5 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_search_bar/flutter_search_bar.dart';
+import './data/cities.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class Locations extends StatefulWidget {
   @override
@@ -9,18 +14,50 @@ class Locations extends StatefulWidget {
 }
 
 class LocationState extends State<Locations> {
+  Firestore firestore;
+  var dex = 0;
   void initState() {
-    if (_Areas.isEmpty)
-      for (int i = 0; i < 30; i++) {
-        // print(_list);
-        _Areas.add({"Name": "Area Number " + i.toString(), "value": false});
-      }
-    _createList();
+    _addCities();
+    _initialize();
+
+    // _createList();
+  }
+
+  Future<void> _initialize() async {
+    final FirebaseApp app = await FirebaseApp.configure(
+      name: 'test',
+      options: const FirebaseOptions(
+        googleAppID: '1:282652140711:android:dbac553d9ed9b18c',
+        apiKey: 'AIzaSyCgJPiep1ADLqvJXbfwDz_hj_Vh_Q_2vuE',
+        projectID: 'senior-project-a1ec6',
+      ),
+    );
+    firestore = Firestore(app: app);
+  }
+
+  _addCities() {
+    cities = [];
+    Firestore.instance.collection('Bahrain Places').snapshots().listen((data) {
+      data.documents.forEach((doc) {
+        cities.add(doc.data);
+        //print(doc.data);
+      });
+      if (_Areas.isEmpty)
+        for (int i = 0; i < cities.length; i++) {
+          
+          _Areas.add({"Name": cities[i]["featureName"], "value": false});
+        }
+      _createList();
+      setState(() {
+        dex = 1;
+        
+      });
+    });
   }
 
 // ---------------- variable declerations --------------
   List _SearchRes = [];
-  bool _notFound=false;
+  bool _notFound = false;
   var checkboxValue = [];
   var _Areas = [];
   var _list = <Widget>[new Padding(padding: EdgeInsets.only(top: 30.0))];
@@ -44,16 +81,15 @@ class LocationState extends State<Locations> {
               }
             }
             if (_SearchRes.isEmpty) {
-              _notFound=true;
-              
-              }
+              _notFound = true;
+            }
             setState(() {
               _searchList();
             });
           } else
             setState(() {
               _SearchRes = [];
-              _notFound=false;
+              _notFound = false;
               _createList();
             });
         },
@@ -91,7 +127,7 @@ class LocationState extends State<Locations> {
           )));
 
       _list.add(new Padding(
-        padding: EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(10.0),
       ));
     }
   }
@@ -138,20 +174,40 @@ class LocationState extends State<Locations> {
   @override
   Widget build(BuildContext context) {
     _createList();
-    if (_SearchRes.isNotEmpty||_notFound) {
-      
+    if (_SearchRes.isNotEmpty || _notFound) {
       _searchList();
     }
 
-    Widget data() => Expanded(child: new ListView(children: _list));
+    var temp = <Widget>[
+      Container(
+        margin: EdgeInsets.only(top: 250.0),
+        alignment: Alignment.center,
+        child: Column(
+          children: <Widget>[
+            new Text(" Loading the cities"),
+            CircularProgressIndicator()
+          ],
+        ),
+      ),
+      Expanded(child: new ListView(children: _list))
+    ];
 
     return Scaffold(
         appBar: new AppBar(
-          title: Text("Cites"),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text(
+                "Save",
+                style: new TextStyle(color: Colors.white),
+              ),
+              onPressed: () => print(cities),
+            )
+          ],
+          title: Text("Cities"),
           centerTitle: true,
         ),
         body: Column(
-          children: <Widget>[searchBar(), data()],
+          children: <Widget>[searchBar(), temp[dex]],
         ));
   }
 }
