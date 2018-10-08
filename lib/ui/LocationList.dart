@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_search_bar/flutter_search_bar.dart';
 import './data/cities.dart';
+import './data/Firebase.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
@@ -18,11 +19,18 @@ class LocationState extends State<Locations> {
   var dex = 0;
   void initState() {
     _addCities();
-    _initialize();
+    _initlize();
 
     // _createList();
   }
-
+  _initlize()
+  {
+    var f; 
+   f= FirebaseConfig1.initFire(firestore);
+   print(f.toString());
+   
+  }
+/*
   Future<void> _initialize() async {
     final FirebaseApp app = await FirebaseApp.configure(
       name: 'test',
@@ -34,17 +42,18 @@ class LocationState extends State<Locations> {
     );
     firestore = Firestore(app: app);
   }
-
+*/
   _addCities() {
     cities = [];
     Firestore.instance.collection('Bahrain Places').snapshots().listen((data) {
+      print(data.documents[0].documentID);
       data.documents.forEach((doc) {
-        cities.add(doc.data);
+        cities.add({"ID":doc.documentID,"Detail":doc.data});
         //print(doc.data);
       });
       if (_Areas.isEmpty)
         for (int i = 0; i < cities.length; i++) {
-          _Areas.add({"Name": cities[i]["featureName"], "value": false});
+          _Areas.add({"Name": cities[i]["ID"], "value": false});
         }
       _createList();
       setState(() {
