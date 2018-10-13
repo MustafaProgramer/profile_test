@@ -8,6 +8,7 @@ import './ui/Home.dart';
 void main() {
   MapView.setApiKey("AIzaSyBth-j1JK30_yCR8PtJgWHixcl020ILtNk");
   runApp(new MaterialApp(
+    debugShowCheckedModeBanner: false,
   routes: {
     // When we navigate to the "/" route, build the FirstScreen Widget
     '/Locations': (context) => Loc(),

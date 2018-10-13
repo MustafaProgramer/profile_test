@@ -45,9 +45,7 @@ class NavState extends State<Nav> {
                     icon: Icon(Icons.person), title: Text('Profile'))
               ],
             ),
-            appBar: new AppBar(
-              title: new Text('Flutter Tabs Demo'),
-            ),
+           
             body: _children[_currentIndex]));
   }
 }

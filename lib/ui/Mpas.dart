@@ -14,6 +14,7 @@ class GMaps extends StatefulWidget {
 }
 
 class GMapsState extends State<GMaps> {
+  Size deviceSize;
   var _stLoc = [];
   FirebaseUser user;
   Firestore firestore;
@@ -58,7 +59,7 @@ class GMapsState extends State<GMaps> {
               .document(_userID)
               .snapshots()
               .listen((data) {
-           // print("Name:" + data.data["S_Home"]["P_Name"]);
+            // print("Name:" + data.data["S_Home"]["P_Name"]);
             //_stLoc.add({"Lat":data.data["S_Home"]["Lat"],"Long":data.data["S_Home"]["Long"]});
             _stLoc.add(data.data);
             print(_stLoc);
@@ -77,20 +78,29 @@ class GMapsState extends State<GMaps> {
   Marker _selectedMarker;
   @override
   Widget build(BuildContext context) {
-    return Center(
+    deviceSize = MediaQuery.of(context).size;
+    return Scaffold(
+      appBar: new AppBar(
+        title: new Text("Map"),
+        centerTitle: true,
+      ),
+      body:  Center(
         child: SizedBox(
-            width: 500.0,
-            height: 550.0,
+            width: double.parse(deviceSize.width.toString()),
+            height: double.parse(deviceSize.height.toString()),
             child: GoogleMap(
                 onMapCreated: _onMapCreated,
                 options: GoogleMapOptions(
+                  showUserLocation: true,
                   compassEnabled: true,
                   tiltGesturesEnabled: true,
                   cameraPosition: const CameraPosition(
                     target: LatLng(26.2285, 50.5860),
                     zoom: 11.0,
                   ),
-                ))));
+                ))))
+    );
+   
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -104,9 +114,6 @@ class GMapsState extends State<GMaps> {
   }
 
   void _add(lat, long, name, phone) {
-    print("----------------------123---------------------------------" +
-        lat +
-        long);
     mapController.addMarker(MarkerOptions(
       position: LatLng(
         double.parse(lat),
@@ -131,7 +138,7 @@ class GMapsState extends State<GMaps> {
         const MarkerOptions(icon: BitmapDescriptor.defaultMarker),
       );
     }
-   setState(() {
+    setState(() {
       _selectedMarker = marker;
     });
     _updateSelectedMarker(
@@ -141,7 +148,6 @@ class GMapsState extends State<GMaps> {
         ),
       ),
     );
-     
   }
 
   void _updateSelectedMarker(MarkerOptions changes) {
