@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 //import 'package:flutter_uikit/utils/uidata.dart';
 
 class CommonScaffold extends StatelessWidget {
+  
   final appTitle;
   final Widget bodyData;
   final showFAB;
@@ -29,7 +30,11 @@ class CommonScaffold extends StatelessWidget {
       this.floatingIcon,
       this.elevation = 4.0});
 
-  Widget myBottomBar() => new BottomAppBar(
+ 
+
+  @override
+  Widget build(BuildContext context) {
+     Widget myBottomBar() => new BottomAppBar(
         shape: CircularNotchedRectangle(),
         child: Ink(
           height: 50.0,
@@ -50,7 +55,7 @@ class CommonScaffold extends StatelessWidget {
                       style: new TextStyle(
                           fontSize: 12.0,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                          color: Colors.black),
                     ),
                   ),
                 ),
@@ -61,16 +66,18 @@ class CommonScaffold extends StatelessWidget {
               SizedBox(
                 height: double.infinity,
                 child: new InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pushNamed(context, "Map");
+                  },
                   radius: 10.0,
-                  splashColor: Colors.yellow,
+                  //splashColor: Colors.yellow,
                   child: Center(
                     child: new Text(
                       "ORDER PAGE",
                       style: new TextStyle(
                           fontSize: 12.0,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                          color: Colors.black),
                     ),
                   ),
                 ),
@@ -79,9 +86,6 @@ class CommonScaffold extends StatelessWidget {
           ),
         ),
       );
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey != null ? scaffoldKey : null,
       backgroundColor: backGroundColor != null ? backGroundColor : null,

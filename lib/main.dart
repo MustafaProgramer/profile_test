@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:map_view/map_view.dart';
 import './ui/LocationList.dart';
-import './ui/Home.dart';
+import './ui/Profile.dart';
 import './ui/Login.dart';
-void main() => runApp(new MaterialApp(
+import './ui/Mapview.dart';
+import './ui/Home.dart';
+void main() {
+  MapView.setApiKey("AIzaSyBth-j1JK30_yCR8PtJgWHixcl020ILtNk");
+  runApp(new MaterialApp(
   routes: {
     // When we navigate to the "/" route, build the FirstScreen Widget
-    '/Locations': (context) => Locations(),
+    '/Locations': (context) => Loc(),
     'Login':(context) => Login(),
-    'Home':(context) => ProfileTwoPage(),
+    'Profile':(context) => ProfileTwoPage(),
+    'Map': (context) => Map(),
+    'Home':(context) => Nav()
     // When we navigate to the "/second" route, build the SecondScreen Widget
   },
   home: new Login(),
 ));
+} 
 

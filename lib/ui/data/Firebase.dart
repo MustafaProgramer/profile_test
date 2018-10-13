@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 class FirebaseConfig1 {
-  
   static Future<Firestore> initFire(Firestore firestore) async {
     final FirebaseApp app = await FirebaseApp.configure(
       name: 'test',
@@ -13,6 +13,27 @@ class FirebaseConfig1 {
       ),
     );
     firestore = Firestore(app: app);
-    return  firestore;
+    return firestore;
+  }
+}
+
+class UserDetails {
+  static FirebaseUser user;
+  static Map details;
+
+  static void setUser(FirebaseUser u) {
+    user = u;
+  }
+
+  static getUser() {
+    return user;
+  }
+
+  static void setDetails(Map d) {
+    details = d;
+  }
+
+  static getDetails() {
+    return details;
   }
 }

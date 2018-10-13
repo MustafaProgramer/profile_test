@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_search_bar/flutter_search_bar.dart';
@@ -7,54 +8,55 @@ import './data/Firebase.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
-class Locations extends StatefulWidget {
+class Loc extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return LocationState();
   }
 }
 
-class LocationState extends State<Locations> {
+class LocationState extends State<Loc> {
   Firestore firestore;
+  FirebaseUser user;
+  Map details;
+  var userAreas = [];
   var dex = 0;
+
   void initState() {
+    user = UserDetails.getUser();
+    details = UserDetails.getDetails();
+    userAreas = details["D_Locations"].toString().split(",");
+    //print(details["D_Locations"]);
     _addCities();
     _initlize();
+  }
 
-    // _createList();
+  _initlize() {
+    FirebaseConfig1.initFire(firestore);
+    //print(f.toString());
   }
-  _initlize()
-  {
-    var f; 
-   f= FirebaseConfig1.initFire(firestore);
-   print(f.toString());
-   
-  }
-/*
-  Future<void> _initialize() async {
-    final FirebaseApp app = await FirebaseApp.configure(
-      name: 'test',
-      options: const FirebaseOptions(
-        googleAppID: '1:282652140711:android:dbac553d9ed9b18c',
-        apiKey: 'AIzaSyCgJPiep1ADLqvJXbfwDz_hj_Vh_Q_2vuE',
-        projectID: 'senior-project-a1ec6',
-      ),
-    );
-    firestore = Firestore(app: app);
-  }
-*/
+
   _addCities() {
     cities = [];
     Firestore.instance.collection('Bahrain Places').snapshots().listen((data) {
       print(data.documents[0].documentID);
       data.documents.forEach((doc) {
-        cities.add({"ID":doc.documentID,"Detail":doc.data});
-        //print(doc.data);
+        cities.add({"ID": doc.documentID, "Detail": doc.data});
       });
-      if (_Areas.isEmpty)
-        for (int i = 0; i < cities.length; i++) {
-          _Areas.add({"Name": cities[i]["ID"], "value": false});
-        }
+      if (_Areas.isEmpty) {
+        cities.forEach((city) {
+          var found = false;
+          //print(city["ID"]);
+          for (int i = 0; i < userAreas.length; i++) {
+            if (userAreas[i] == city["ID"]) {
+              found = true;
+              _Areas.add({"Name": city["ID"], "value": true});
+            }
+          }
+          if (!found) _Areas.add({"Name": city["ID"], "value": false});
+        });
+      }
+
       _createList();
       setState(() {
         dex = 1;
@@ -69,6 +71,7 @@ class LocationState extends State<Locations> {
   var _Areas = [];
   var _list = <Widget>[new Padding(padding: EdgeInsets.only(top: 30.0))];
   TextEditingController _searchInput = new TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   var _sIndex;
 
 // ---------------- Search bar ---------------------------
@@ -102,17 +105,16 @@ class LocationState extends State<Locations> {
         },
         controller: _searchInput,
         decoration: InputDecoration(
-          
           icon: Icon(Icons.search),
           hintText: "Search for area..",
-          suffix:  IconButton(
+          suffix: IconButton(
               icon: Icon(Icons.clear),
               onPressed: () {
                 _searchInput.clear();
                 setState(() {
-                   _SearchRes = [];
-              _notFound = false;
-              _createList();
+                  _SearchRes = [];
+                  _notFound = false;
+                  _createList();
                 });
               }),
         ),
@@ -176,6 +178,7 @@ class LocationState extends State<Locations> {
                       var index = _SearchRes[i]["Index"];
                       _Areas[index]["value"] = !_SearchRes[i]["value"];
                       print(_SearchRes[i]["value"]);
+                      //print(_Areas[index]["value"]);
                     });
                   },
                   value: _SearchRes[i]["value"]),
@@ -189,13 +192,40 @@ class LocationState extends State<Locations> {
     }
   }
 
+// --------------------------- update User Locations -------------------
+  _updateUserLocations() {
+    List areas = _Areas.where((v) => v["value"] == true).toList();
+    print(areas);
+    var aNames = "";
+    for (int i = 0; i < areas.length; i++) {
+      
+      aNames += areas[i]["Name"];
+      if (i != areas.length-1) aNames += ",";
+    }
+
+    print(aNames);
+
+    Firestore.instance
+        .collection('Driver')
+        .document(user.uid)
+        .updateData({"D_Locations": aNames}).then((onValue){
+          SnackBar snackBar = new SnackBar(
+            content: new Text("Locations has been Saved successfully"),
+            duration: Duration(seconds: 2),
+
+          );
+         _scaffoldKey.currentState.showSnackBar(snackBar);
+        });
+  }
+
+// ----------------------------- askjdlfksdjalfksd ----------------------
   @override
   Widget build(BuildContext context) {
     _createList();
     if (_SearchRes.isNotEmpty || _notFound) {
       _searchList();
     }
-
+//----------------  loading screen ---------------------
     var temp = <Widget>[
       Container(
         margin: EdgeInsets.only(top: 250.0),
@@ -210,7 +240,9 @@ class LocationState extends State<Locations> {
       Expanded(child: new ListView(children: _list))
     ];
 
+// --------------------- Scaffold build --------------------------
     return Scaffold(
+      key: _scaffoldKey,
         appBar: new AppBar(
           actions: <Widget>[
             new FlatButton(
@@ -218,7 +250,9 @@ class LocationState extends State<Locations> {
                 "Save",
                 style: new TextStyle(color: Colors.white),
               ),
-              onPressed: () => print(cities),
+              onPressed: () {
+                _updateUserLocations();
+              },
             )
           ],
           title: Text("Cities"),

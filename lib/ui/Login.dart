@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:connectivity/connectivity.dart';
-
+import './data/Firebase.dart';
 class Login extends StatelessWidget {
   TextEditingController UserName = new TextEditingController();
   TextEditingController Password = new TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
+ 
   Future<FirebaseUser> _handleSignIn(cont) async {
     var connectivityResult = await (new Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile ||
@@ -19,17 +19,15 @@ class Login extends StatelessWidget {
         );
         return user;
       }
-      
     } else
       Scaffold.of(cont).showSnackBar(new SnackBar(
         content: new Text("No Internet connection "),
       ));
-    
   }
 
   @override
   Widget build(BuildContext context) {
-      UserName.text = "admin@a.com";
+    UserName.text = "admin@a.com";
     Password.text = "Admin123";
     var form =
         //------------------- Login form --------------------
@@ -55,6 +53,7 @@ class Login extends StatelessWidget {
             onPressed: () {
               _handleSignIn(context).then((FirebaseUser user) {
                 print(user);
+                UserDetails.setUser(user);
                 if (user.email != "null") {
                   Navigator.pushNamed(context, "Home");
                 }
