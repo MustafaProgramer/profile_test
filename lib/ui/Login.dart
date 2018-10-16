@@ -2,31 +2,83 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:connectivity/connectivity.dart';
 import './data/Firebase.dart';
-class Login extends StatelessWidget {
+import 'package:progress_hud/progress_hud.dart';
+import 'package:progress_indicators/progress_indicators.dart';
+
+class Login extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return LoginState();
+  }
+}
+
+class LoginState extends State<Login> {
   TextEditingController UserName = new TextEditingController();
   TextEditingController Password = new TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
- 
-  Future<FirebaseUser> _handleSignIn(cont) async {
-    var connectivityResult = await (new Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.mobile ||
-        connectivityResult == ConnectivityResult.wifi) {
-      {
-        FirebaseUser user = await _auth.signInWithEmailAndPassword(
-          email: UserName.text,
-          password: Password.text,
-        );
-        return user;
-      }
-    } else
-      Scaffold.of(cont).showSnackBar(new SnackBar(
-        content: new Text("No Internet connection "),
-      ));
-  }
-
+  var _scaffoldKey = new GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
+    Future<Null> _loading() async {
+      return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => new Dialog(
+            insetAnimationCurve: Curves.decelerate,
+            child: new Row(
+              children: [
+                new Padding(
+                  padding: EdgeInsets.all(40.0),
+                ),
+                new CircularProgressIndicator(),
+                new Padding(
+                  padding: EdgeInsets.only(left: 30.0),
+                ),
+                FadingText('Loading...'),
+              ],
+            )),
+      );
+    }
+
+    _onTimeout() {
+      print("time out ");
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+        content: new Text(
+            "Something went wrong check your internet conneticon and try again"),
+      ));
+      //Navigator.pop(context);
+    }
+
+    Future<FirebaseUser> _handleSignIn(cont) async {
+      _loading();
+      try {
+        var connectivityResult = await (new Connectivity().checkConnectivity());
+        if (connectivityResult == ConnectivityResult.mobile ||
+            connectivityResult == ConnectivityResult.wifi) {
+          {
+            FirebaseUser user = await _auth
+                .signInWithEmailAndPassword(
+                  email: UserName.text,
+                  password: Password.text,
+                )
+                .timeout(Duration(seconds: 15), onTimeout: () => _onTimeout());
+            Navigator.pop(context);
+            return user;
+          }
+        } else {
+          Navigator.pop(context);
+          _scaffoldKey.currentState.showSnackBar(new SnackBar(
+            content: new Text("No Internet connection "),
+          ));
+        }
+      } catch (err) {
+        print(err);
+      }
+    }
+
+  
+
     UserName.text = "admin@a.com";
     Password.text = "Admin123";
     var form =
@@ -64,6 +116,7 @@ class Login extends StatelessWidget {
     ];
 
     return Scaffold(
+        key: _scaffoldKey,
         resizeToAvoidBottomPadding: false,
         body: new ListView(
             padding: EdgeInsets.only(top: 20.0, left: 30.0, right: 30.0),

@@ -6,6 +6,7 @@ import './data/Firebase.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import './path.dart';
+import 'package:progress_indicators/progress_indicators.dart';
 
 class ProfileTwoPage extends StatefulWidget {
   @override
@@ -66,10 +67,10 @@ class ProfileTwoState extends State<ProfileTwoPage> {
         _locations.text = data["D_Locations"];
         _discription.text = data['D_Discrip'];
         //print(_discription);
-      }).onError((handleError){
+      }).onError((handleError) {
         print(handleError);
         print("errrrrrrrrrrrrrrrrrrrrrrrrrer");
-        var _det= UserDetails.getDetails();
+        var _det = UserDetails.getDetails();
         _name.text = _det["D_Name"];
         _email.text = _det["D_Email"];
         _phone.text = _det["D_Phone"];
@@ -78,6 +79,37 @@ class ProfileTwoState extends State<ProfileTwoPage> {
         _discription.text = _det['D_Discrip'];
       });
     });
+  }
+
+  _recoverDetails() {
+    var _det = UserDetails.getDetails();
+    _name.text = _det["D_Name"];
+    _email.text = _det["D_Email"];
+    _phone.text = _det["D_Phone"];
+    _conpany.text = _det["D_Company"];
+    _locations.text = _det["D_Locations"];
+    _discription.text = _det['D_Discrip'];
+  }
+
+  Future<Null> _loading(text) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => new Dialog(
+          insetAnimationCurve: Curves.decelerate,
+          child: new Row(
+            children: [
+              new Padding(
+                padding: EdgeInsets.all(40.0),
+              ),
+              new CircularProgressIndicator(),
+              new Padding(
+                padding: EdgeInsets.only(left: 30.0),
+              ),
+              FadingText(text),
+            ],
+          )),
+    );
   }
 
   Future<Null> _askedToLead(id, cxt) async {
@@ -91,6 +123,21 @@ class ProfileTwoState extends State<ProfileTwoPage> {
       case (1):
         mess = "هل تريد إرسال الاشعار ؟";
         tos = "تم إرسال الاشعار ";
+    }
+    _snackLoading() {
+      //print("SnackKey =" + _scaffoldKey.toString());
+      Scaffold.of(context).showSnackBar(new SnackBar(
+        duration: new Duration(seconds: 5),
+        content: new Row(
+          children: <Widget>[
+            new CircularProgressIndicator(),
+            Padding(
+              padding: EdgeInsets.only(left: 20.0),
+            ),
+            new FadingText("Saving...")
+          ],
+        ),
+      ));
     }
 
     return showDialog(
@@ -111,19 +158,21 @@ class ProfileTwoState extends State<ProfileTwoPage> {
               new FlatButton(
                 child: new Text('Yes'),
                 onPressed: () {
+                  Navigator.of(context).pop();
+                  _snackLoading();
                   _updateInfo().then((T) {
                     print(T);
+
                     if (T == true)
                       Scaffold.of(cxt)
                           .showSnackBar(new SnackBar(content: new Text(tos)));
                     else {
-                      print(T.toString()+"..........");
-                       Scaffold.of(cxt)
-                          .showSnackBar(new SnackBar(content: new Text("some thing went wrong please try again later")));
+                      print(T.toString() + "..........");
+                      Scaffold.of(cxt).showSnackBar(new SnackBar(
+                          content: new Text(
+                              "some thing went wrong please try again later")));
                       _getDetails();
                     }
-
-                    Navigator.of(context).pop();
                   });
                 },
               ),
@@ -132,7 +181,7 @@ class ProfileTwoState extends State<ProfileTwoPage> {
                 onPressed: () {
                   debugPrint("No");
                   setState(() {
-                    enabled =!enabled;
+                    // enabled = !enabled;
                     _getDetails();
                   });
                   Navigator.of(context).pop();
@@ -146,16 +195,55 @@ class ProfileTwoState extends State<ProfileTwoPage> {
   Future _updateInfo() async {
     bool done = false;
     try {
-      
-       Firestore.instance.collection('Driver').document(user.uid).updateData({
+      // _loading("Saving ...");
+
+      // print( Firestore.toString());
+
+      DocumentReference docRef =
+          Firestore.instance.collection("Driver").document(user.uid);
+      await docRef.updateData({
         'D_Email': _email.text,
         "D_Name": _name.text,
         "D_Phone": _phone.text,
         'D_Discrip': _discription.text
-      }).whenComplete(() {done= true; print("done"); } );
+      }).whenComplete(() {
+        done = true;
+        print("completed");
+        return done;
+      }).catchError((onError) {
+        Navigator.of(context).pop();
+        print("error = " + onError);
+        return done;
+      }).timeout(Duration(seconds: 20), onTimeout: () {
+        print("Timeout");
+         _recoverDetails();
+        setState(() {
+                   
+                });
+       
+        //Navigator.of(context).pop();
+      });
       return done;
+    /*
+          Firestore firestore = Firestore.instance;
+      final DocumentReference docRef =
+          Firestore.instance.collection("Driver").document(user.uid);
+      print(docRef.toString());
+
+      var transaction = Firestore.instance.runTransaction((t) {
+        return t.get(docRef).then((doc) {
+          // Add one person to the city population
+         // t.update(docRef, {"D_Phone": "+973"});
+        });
+      }).then((result) {
+        debugPrint('Transaction success!');
+      }).catchError((err) {
+        debugPrint('Transaction failure:' + err);
+      });
+      */
     } catch (err) {
       print(err);
+      print("error..");
       return false;
     }
 
@@ -169,9 +257,9 @@ class ProfileTwoState extends State<ProfileTwoPage> {
         child: InkWell(
           child: Icon(Icons.edit),
           onTap: () {
-            print("edit pressed");
+            // print("edit pressed");
             enabled = !enabled;
-            print(enabled);
+            //print(enabled);
             setState(() {
               barIndex = 1;
             });
@@ -185,9 +273,9 @@ class ProfileTwoState extends State<ProfileTwoPage> {
             InkWell(
               child: Icon(Icons.edit),
               onTap: () {
-                print("edit pressed");
+                //print("edit pressed");
                 enabled = !enabled;
-                print(enabled);
+                //print(enabled);
                 setState(() {
                   barIndex = 0;
                 });
@@ -200,9 +288,9 @@ class ProfileTwoState extends State<ProfileTwoPage> {
               child: Icon(Icons.done),
               onTap: () {
                 _askedToLead(0, context);
-                print("Done pressed");
+                //  print("Done pressed");
                 enabled = !enabled;
-                print(enabled);
+                //print(enabled);
                 setState(() {
                   barIndex = 0;
                 });
@@ -236,43 +324,45 @@ class ProfileTwoState extends State<ProfileTwoPage> {
           width: double.infinity,
           //color: Colors.black,
           child: Padding(
-            padding: const EdgeInsets.all(0.0),
-            child: Card(
-              color: Colors.white12,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50.0),
-                        border: Border.all(width: 2.0, color: Colors.white)),
-                    child: CircleAvatar(
-                      radius: 40.0,
-                      backgroundImage: NetworkImage(
-                          "http://www.cutestpaw.com/wp-content/uploads/2011/11/OIo.jpg"),
+              padding: const EdgeInsets.all(0.0),
+              child: Card(
+                color: Colors.white12,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50.0),
+                          border: Border.all(width: 2.0, color: Colors.white)),
+                      child: CircleAvatar(
+                        radius: 40.0,
+                        backgroundImage: NetworkImage(
+                            "http://www.cutestpaw.com/wp-content/uploads/2011/11/OIo.jpg"),
+                      ),
                     ),
-                  ),
-                  new Padding(
-                      padding: EdgeInsets.only(left: deviceSize.width / 3.2),
-                      child: TextField(
-                        controller: _name,
-                        enabled: enabled,
-                        style: TextStyle(color: Colors.white, fontSize: 20.0),
-                      )),
-                  new Padding(
-                      padding: EdgeInsets.only(left: 10.0),
-                      child: TextField(
-                        keyboardType: TextInputType.multiline,
-                        maxLines: 3,
-                        controller: _discription,
-                        enabled: enabled,
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      )),
-                ],
-              ),
-            ),
-          ),
+                    new Padding(
+                        padding: EdgeInsets.only(left: deviceSize.width / 3.2),
+                        child: TextField(
+                          controller: _name,
+                          enabled: enabled,
+                          style: TextStyle(color: Colors.white, fontSize: 20.0),
+                        )),
+                    new Expanded(
+                      child: new Padding(
+                          padding: EdgeInsets.only(left: 10.0),
+                          child: TextField(
+                            keyboardType: TextInputType.multiline,
+                            maxLines: 3,
+                            controller: _discription,
+                            enabled: enabled,
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          )),
+                    )
+                  ],
+                ),
+              )),
         );
 
     Widget info() => Container(

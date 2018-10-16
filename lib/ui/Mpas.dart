@@ -80,27 +80,21 @@ class GMapsState extends State<GMaps> {
   Widget build(BuildContext context) {
     deviceSize = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: new AppBar(
-        title: new Text("Map"),
-        centerTitle: true,
-      ),
-      body:  Center(
-        child: SizedBox(
-            width: double.parse(deviceSize.width.toString()),
-            height: double.parse(deviceSize.height.toString()),
-            child: GoogleMap(
-                onMapCreated: _onMapCreated,
-                options: GoogleMapOptions(
-                  showUserLocation: true,
-                  compassEnabled: true,
-                  tiltGesturesEnabled: true,
-                  cameraPosition: const CameraPosition(
-                    target: LatLng(26.2285, 50.5860),
-                    zoom: 11.0,
-                  ),
-                ))))
-    );
-   
+        body: Center(
+            child: SizedBox(
+                width: double.parse(deviceSize.width.toString()),
+                height: double.parse(deviceSize.height.toString()),
+                child: GoogleMap(
+                    onMapCreated: _onMapCreated,
+                    options: GoogleMapOptions(
+                      showUserLocation: true,
+                      compassEnabled: true,
+                      tiltGesturesEnabled: true,
+                      cameraPosition: const CameraPosition(
+                        target: LatLng(26.2285, 50.5860),
+                        zoom: 11.0,
+                      ),
+                    )))));
   }
 
   void _onMapCreated(GoogleMapController controller) {
