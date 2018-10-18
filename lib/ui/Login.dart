@@ -77,7 +77,7 @@ class LoginState extends State<Login> {
       }
     }
 
-  
+    var _avaLink = null;
 
     UserName.text = "admin@a.com";
     Password.text = "Admin123";
@@ -113,6 +113,7 @@ class LoginState extends State<Login> {
             },
             color: Colors.lightBlue,
           )),
+     
     ];
 
     return Scaffold(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:profile_test/ui/widgets/common_scaffold.dart';
@@ -7,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import './path.dart';
 import 'package:progress_indicators/progress_indicators.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileTwoPage extends StatefulWidget {
   @override
@@ -35,6 +38,15 @@ class ProfileTwoState extends State<ProfileTwoPage> {
   var _dName = "unknown";
   var barIndex = 0;
   static bool enabled = false;
+  File _image;
+
+  Future getImage() async {
+    var image = await ImagePicker.pickImage(source: ImageSource.camera);
+
+    setState(() {
+      _image = image;
+    });
+  }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   @override
@@ -120,9 +132,6 @@ class ProfileTwoState extends State<ProfileTwoPage> {
         mess = " Are you sure you want to Save Changes ?";
         tos = "Edits Saved successfully";
         break;
-      case (1):
-        mess = "هل تريد إرسال الاشعار ؟";
-        tos = "تم إرسال الاشعار ";
     }
     _snackLoading() {
       //print("SnackKey =" + _scaffoldKey.toString());
@@ -216,15 +225,13 @@ class ProfileTwoState extends State<ProfileTwoPage> {
         return done;
       }).timeout(Duration(seconds: 20), onTimeout: () {
         print("Timeout");
-         _recoverDetails();
-        setState(() {
-                   
-                });
-       
+        _recoverDetails();
+        setState(() {});
+
         //Navigator.of(context).pop();
       });
       return done;
-    /*
+      /*
           Firestore firestore = Firestore.instance;
       final DocumentReference docRef =
           Firestore.instance.collection("Driver").document(user.uid);
@@ -250,6 +257,7 @@ class ProfileTwoState extends State<ProfileTwoPage> {
     //return true;
   }
 
+  bool editing = false;
   @override
   Widget build(BuildContext context) {
     List appBar = <Widget>[
@@ -259,6 +267,7 @@ class ProfileTwoState extends State<ProfileTwoPage> {
           onTap: () {
             // print("edit pressed");
             enabled = !enabled;
+            editing = !editing;
             //print(enabled);
             setState(() {
               barIndex = 1;
@@ -268,35 +277,18 @@ class ProfileTwoState extends State<ProfileTwoPage> {
         padding: EdgeInsets.only(right: 25.0),
       ),
       new Padding(
-        child: new Row(
-          children: <Widget>[
-            InkWell(
-              child: Icon(Icons.edit),
-              onTap: () {
-                //print("edit pressed");
-                enabled = !enabled;
-                //print(enabled);
-                setState(() {
-                  barIndex = 0;
-                });
-              },
-            ),
-            new Padding(
-              padding: EdgeInsets.only(right: 20.0),
-            ),
-            InkWell(
-              child: Icon(Icons.done),
-              onTap: () {
-                _askedToLead(0, context);
-                //  print("Done pressed");
-                enabled = !enabled;
-                //print(enabled);
-                setState(() {
-                  barIndex = 0;
-                });
-              },
-            ),
-          ],
+        child: InkWell(
+          child: Icon(Icons.done),
+          onTap: () {
+            _askedToLead(0, context);
+            //  print("Done pressed");
+            enabled = !enabled;
+            editing = !editing;
+            //print(enabled);
+            setState(() {
+              barIndex = 0;
+            });
+          },
         ),
         padding: EdgeInsets.only(right: 25.0),
       ),
@@ -313,6 +305,11 @@ class ProfileTwoState extends State<ProfileTwoPage> {
       Navigator.push(context, route);
     }
 
+    var _avaLink = null;
+    //https://cdn.iconscout.com/icon/free/png-256/avatar-375-456327.png
+    var _bannerLink;
+    bool exist;
+
     Widget profileHeader() => Container(
           decoration: new BoxDecoration(
               image: new DecorationImage(
@@ -323,46 +320,65 @@ class ProfileTwoState extends State<ProfileTwoPage> {
           height: deviceSize.height / 3.2,
           width: double.infinity,
           //color: Colors.black,
-          child: Padding(
-              padding: const EdgeInsets.all(0.0),
-              child: Card(
-                color: Colors.white12,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(50.0),
-                          border: Border.all(width: 2.0, color: Colors.white)),
+          child: Card(
+            color: Colors.white10,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                editing
+                    ? Padding(
+                        child: InkWell(
+                          enableFeedback: editing ? true : false,
+                          onTap: () {
+                            (!editing) ? null : getImage();
+                          },
+                          child: Icon(
+                            Icons.add_a_photo,
+                            color: Colors.white,
+                          ),
+                        ),
+                        padding: EdgeInsets.only(left: deviceSize.width / 1.1),
+                      )
+                    : Divider(),
+                Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(50.0),
+                        border: Border.all(width: 2.0, color: Colors.white)),
+                    child: InkWell(
+                      enableFeedback: editing ? true : false,
+                      onTap: () {
+                        (!editing) ? null : getImage();
+                      },
                       child: CircleAvatar(
+                        child: editing ? Icon(Icons.add_a_photo) : null,
                         radius: 40.0,
-                        backgroundImage: NetworkImage(
-                            "http://www.cutestpaw.com/wp-content/uploads/2011/11/OIo.jpg"),
+                        backgroundImage: (_avaLink != null)
+                            ? NetworkImage(_avaLink)
+                            : new AssetImage('assets/default-avatar.png'),
                       ),
-                    ),
-                    new Padding(
-                        padding: EdgeInsets.only(left: deviceSize.width / 3.2),
-                        child: TextField(
-                          controller: _name,
-                          enabled: enabled,
-                          style: TextStyle(color: Colors.white, fontSize: 20.0),
-                        )),
-                    new Expanded(
-                      child: new Padding(
-                          padding: EdgeInsets.only(left: 10.0),
-                          child: TextField(
-                            keyboardType: TextInputType.multiline,
-                            maxLines: 3,
-                            controller: _discription,
-                            enabled: enabled,
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          )),
-                    )
-                  ],
-                ),
-              )),
+                    )),
+                new Padding(
+                    padding: EdgeInsets.only(left: deviceSize.width / 3.2),
+                    child: TextField(
+                      controller: _name,
+                      enabled: enabled,
+                      style: TextStyle(color: Colors.white, fontSize: 20.0),
+                    )),
+                new Expanded(
+                  child: new Padding(
+                      padding: EdgeInsets.only(left: 10.0),
+                      child: TextField(
+                        keyboardType: TextInputType.multiline,
+                        maxLines: 3,
+                        controller: _discription,
+                        enabled: enabled,
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      )),
+                )
+              ],
+            ),
+          ),
         );
 
     Widget info() => Container(
@@ -405,6 +421,7 @@ class ProfileTwoState extends State<ProfileTwoPage> {
                 },
                 child: new TextField(
                   enabled: false,
+                   maxLines: 2,
                   controller: _locations,
                   decoration: new InputDecoration(
                       icon: Icon(
