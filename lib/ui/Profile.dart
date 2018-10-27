@@ -10,36 +10,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import './path.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:image_picker/image_picker.dart';
+import 'image_picker_handler.dart';
 
-class ProfileTwoPage extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return ProfileTwoState();
-  }
-}
-
-class ProfileTwoState extends State<ProfileTwoPage> {
-  Size deviceSize;
-  FirebaseUser user;
-  var cont;
-  TextEditingController _name = new TextEditingController();
-  TextEditingController _email = new TextEditingController();
-  TextEditingController _phone = new TextEditingController();
-  TextEditingController _conpany = new TextEditingController();
-  TextEditingController _locations = new TextEditingController();
-  TextEditingController _discription = new TextEditingController();
-
-// --------------------------- profile Header (banner + name +profile pic, etc) ----------------------
-
-  // ----------------- Info widget (Email, phone, company, Locations) -----------------------------------
-
-// -------------------- building the scaffold -----------------------------
-  Firestore firestore;
-  var _dName = "unknown";
-  var barIndex = 0;
-  static bool enabled = false;
-  File _image;
-
+/*
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.camera);
 
@@ -47,52 +20,104 @@ class ProfileTwoState extends State<ProfileTwoPage> {
       _image = image;
     });
   }
+*/
+class ProfileTwoPage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return ProfileTwoState();
+  }
+}
 
+class ProfileTwoState extends State<ProfileTwoPage>
+    with TickerProviderStateMixin, ImagePickerListener {
+  // ----------------- variables decleration -------------------------------
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  Size deviceSize;
+  FirebaseUser user;
+  Firestore firestore;
+ 
+  TextEditingController _name = new TextEditingController();
+  TextEditingController _email = new TextEditingController();
+  TextEditingController _phone = new TextEditingController();
+  TextEditingController _conpany = new TextEditingController();
+  TextEditingController _locations = new TextEditingController();
+  TextEditingController _discription = new TextEditingController();
+
+  var cont;
+  var details;
+  var _dName = "unknown";
+  var barIndex = 0;
+  static bool enabled = false;
+
+  File _image;
+  File _banimage;
+  AnimationController _controller;
+  ImagePickerHandler imagePicker;
+  AssetImage avaImage = AssetImage('assets/default-avatar.png');
+  AssetImage bannerImage = AssetImage('assets/images/banner.jpg');
+  bool banEdit = false;
+    bool avatEdit = false;
+// ----------------- Initial state function -------------------------
   @override
   void initState() {
+  
     user = UserDetails.getUser();
-    print("ABC");
-/*
+    super.initState();
+    _controller = new AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    FirebaseConfig1.initFire(firestore);
+    //details = _getDetails();
+    imagePicker = new ImagePickerHandler(this, _controller);
+    imagePicker.init();
+    _getDetails();
+/*super.initState();
      Firestore.instance.collection('Driver').document("PurzGEW5lCXdHM6P2RbhEao1WVv1")
   .setData({ 'D_Company': 'Al sadiq', 'D_Email': 'AlSadiq@gmail.com',"D_Name":"Mansoor Abbas","D_Phone":"+97338477340","D_Locations":"Sitra,Sar" });
   */
-    _getDetails();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  userImage(File _image) {
+    setState(() {
+      if(avatEdit)
+      this._image = _image;
+      else if(banEdit)
+      this._banimage = _image;
+    });
   }
 
 // ---------------- Geting user deatils --------------------
-
   Future _getDetails() async {
-    await FirebaseConfig1.initFire(firestore).then((onValue) {
-      Firestore.instance
-          .collection('Driver')
-          .document(user.uid)
-          .snapshots()
-          .listen((data) {
-        print(data["D_Name"]);
-        UserDetails.setDetails(data.data);
-        print(data.data);
-        _name.text = data["D_Name"];
+    DocumentReference docRef =
+        Firestore.instance.collection("Driver").document(user.uid);
+    var ref = await docRef.get();
+    var data = ref.data;
+      UserDetails.setDetails(data);
+_name.text = data["D_Name"];
         _email.text = data["D_Email"];
         _phone.text = data["D_Phone"];
         _conpany.text = data["D_Company"];
         _locations.text = data["D_Locations"];
         _discription.text = data['D_Discrip'];
-        //print(_discription);
-      }).onError((handleError) {
-        print(handleError);
-        print("errrrrrrrrrrrrrrrrrrrrrrrrrer");
-        var _det = UserDetails.getDetails();
-        _name.text = _det["D_Name"];
-        _email.text = _det["D_Email"];
-        _phone.text = _det["D_Phone"];
-        _conpany.text = _det["D_Company"];
-        _locations.text = _det["D_Locations"];
-        _discription.text = _det['D_Discrip'];
-      });
-    });
+    //return ref;
   }
 
+/*
+UserDetails.setDetails(data.data);
+_name.text = data["D_Name"];
+        _email.text = data["D_Email"];
+        _phone.text = data["D_Phone"];
+        _conpany.text = data["D_Company"];
+        _locations.text = data["D_Locations"];
+        _discription.text = data['D_Discrip'];*/
   _recoverDetails() {
     var _det = UserDetails.getDetails();
     _name.text = _det["D_Name"];
@@ -204,10 +229,6 @@ class ProfileTwoState extends State<ProfileTwoPage> {
   Future _updateInfo() async {
     bool done = false;
     try {
-      // _loading("Saving ...");
-
-      // print( Firestore.toString());
-
       DocumentReference docRef =
           Firestore.instance.collection("Driver").document(user.uid);
       await docRef.updateData({
@@ -258,6 +279,7 @@ class ProfileTwoState extends State<ProfileTwoPage> {
   }
 
   bool editing = false;
+
   @override
   Widget build(BuildContext context) {
     List appBar = <Widget>[
@@ -307,14 +329,18 @@ class ProfileTwoState extends State<ProfileTwoPage> {
 
     var _avaLink = null;
     //https://cdn.iconscout.com/icon/free/png-256/avatar-375-456327.png
-    var _bannerLink;
+    var _bannerLink=null;
     bool exist;
+    
 
     Widget profileHeader() => Container(
           decoration: new BoxDecoration(
               image: new DecorationImage(
-            image: new NetworkImage(
-                "http://sc01.alicdn.com/kf/UT8ECKhXzJaXXagOFbXh/200043761/UT8ECKhXzJaXXagOFbXh.jpg"),
+            image: (_bannerLink != null)
+                          ? NetworkImage(_bannerLink)
+                            : _banimage != null 
+                                ? new ExactAssetImage(_banimage.path)
+                                : bannerImage,
             fit: BoxFit.cover,
           )),
           height: deviceSize.height / 3.2,
@@ -330,7 +356,9 @@ class ProfileTwoState extends State<ProfileTwoPage> {
                         child: InkWell(
                           enableFeedback: editing ? true : false,
                           onTap: () {
-                            (!editing) ? null : getImage();
+                           
+                            (!editing) ? null :  banEdit = true;
+                            avatEdit = false; imagePicker.showDialog(context);
                           },
                           child: Icon(
                             Icons.add_a_photo,
@@ -347,14 +375,18 @@ class ProfileTwoState extends State<ProfileTwoPage> {
                     child: InkWell(
                       enableFeedback: editing ? true : false,
                       onTap: () {
-                        (!editing) ? null : getImage();
+                       
+                        (!editing) ? null :  avatEdit = true;
+                        banEdit = false; imagePicker.showDialog(context);
                       },
                       child: CircleAvatar(
                         child: editing ? Icon(Icons.add_a_photo) : null,
                         radius: 40.0,
                         backgroundImage: (_avaLink != null)
-                            ? NetworkImage(_avaLink)
-                            : new AssetImage('assets/default-avatar.png'),
+                          ? NetworkImage(_avaLink)
+                            : _image != null 
+                                ? new ExactAssetImage(_image.path)
+                                : avaImage,
                       ),
                     )),
                 new Padding(
@@ -397,6 +429,9 @@ class ProfileTwoState extends State<ProfileTwoPage> {
             new TextField(
               enabled: enabled,
               controller: _phone,
+              onChanged: (t) {
+                _phone.text = t;
+              },
               decoration: new InputDecoration(
                   icon: Icon(
                 Icons.phone_android,
@@ -421,7 +456,7 @@ class ProfileTwoState extends State<ProfileTwoPage> {
                 },
                 child: new TextField(
                   enabled: false,
-                   maxLines: 2,
+                  maxLines: 2,
                   controller: _locations,
                   decoration: new InputDecoration(
                       icon: Icon(
@@ -443,6 +478,31 @@ class ProfileTwoState extends State<ProfileTwoPage> {
             ],
           ),
         );
+
+    Widget futureProfile() {
+      return new FutureBuilder(
+        future: details,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            // print(snapshot.data.data);
+            var data = snapshot.data.data;
+            UserDetails.setDetails(snapshot.data.data);
+            _name.text = data["D_Name"];
+            _email.text = data["D_Email"];
+            _phone.text = data["D_Phone"];
+            _conpany.text = data["D_Company"];
+            _locations.text = data["D_Locations"];
+            _discription.text = data['D_Discrip'];
+            return bodyData();
+          } else if (snapshot.hasError) {
+            return new Text("${snapshot.error}");
+          }
+
+          return Center(child: new CircularProgressIndicator());
+        },
+      );
+    }
+
 // ------------------------- on click funcitons ---------------------------
     deviceSize = MediaQuery.of(context).size;
     return Scaffold(
@@ -451,7 +511,8 @@ class ProfileTwoState extends State<ProfileTwoPage> {
         actions: <Widget>[appBar[barIndex]],
         title: new Text("Profile"),
       ),
-      body: bodyData(),
+      body: Center(child: bodyData()),
+      
     );
   }
 }

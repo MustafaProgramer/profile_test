@@ -5,6 +5,7 @@ import './ui/Profile.dart';
 import './ui/Login.dart';
 import './ui/Mapview.dart';
 import './ui/Home.dart';
+import './ui/Future.dart';
 void main() {
   MapView.setApiKey("AIzaSyBth-j1JK30_yCR8PtJgWHixcl020ILtNk");
   runApp(new MaterialApp(

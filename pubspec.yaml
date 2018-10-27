@@ -40,7 +40,7 @@ dependencies:
   progress_hud:
   progress_indicators:
   image_picker: 
-
+  image_cropper:
 dev_dependencies:  
   flutter_test:
     sdk: flutter
@@ -64,6 +64,7 @@ flutter:
   #  - images/a_dot_ham.jpeg
   assets:
     - assets/default-avatar.png
+    - assets/images/banner.jpg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.
 
