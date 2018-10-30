@@ -8,7 +8,7 @@ import 'package:progress_indicators/progress_indicators.dart';
 class Login extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return LoginState();
+    return new LoginState();
   }
 }
 

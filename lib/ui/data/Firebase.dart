@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-
+import 'package:firebase_storage/firebase_storage.dart';
 class FirebaseConfig1 {
+  static FirebaseStorage _storage;
   static Future<Firestore> initFire(Firestore firestore) async {
     final FirebaseApp app = await FirebaseApp.configure(
       name: 'test',
@@ -13,7 +14,20 @@ class FirebaseConfig1 {
       ),
     );
     firestore = Firestore(app: app);
+    final FirebaseStorage storage = FirebaseStorage(
+      app: app, storageBucket: 'gs://senior-project-a1ec6.appspot.com');
+    setStorage(storage);
     return firestore;
+  }
+
+  static setStorage(storage)
+  {
+      _storage = storage;
+  }
+
+ static getStorage()
+  {
+    return _storage;
   }
 }
 
@@ -35,5 +49,23 @@ class UserDetails {
 
   static getDetails() {
     return details;
+  }
+}
+
+class Students {
+  static List studentList=[] ;
+
+  static void setStudents(s)
+  {
+    studentList = s;
+  }
+static getStudents() {
+
+    return studentList;
+  }
+  static addStudent(data)
+  {
+    print(data);
+    studentList.add(data);
   }
 }

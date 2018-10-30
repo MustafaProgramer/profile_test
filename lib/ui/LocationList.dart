@@ -11,7 +11,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 class Loc extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return LocationState();
+    return new LocationState();
   }
 }
 

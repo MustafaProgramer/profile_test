@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'Profile.dart';
 import 'Mpas.dart';
+import 'Students.dart';
 class Nav extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -12,6 +13,7 @@ class NavState extends State<Nav> {
   int _currentIndex = 0;
   final List<Widget> _children = [
     GMaps(),
+    StudentList(),
     ProfileTwoPage(),
     //GMaps()
   ];
@@ -40,10 +42,14 @@ class NavState extends State<Nav> {
            icon: Icon(Icons.mail),
            title: Text('Messages'),
          ),
-         */
+         */ new BottomNavigationBarItem(
+                    icon: Icon(Icons.navigation), title: Text('Students')),
                 new BottomNavigationBarItem(
-                    icon: Icon(Icons.person), title: Text('Profile'))
+                    icon: Icon(Icons.person), title: Text('Profile')),
+                   
+            
               ],
+
             ),
            
             body: _children[_currentIndex]));

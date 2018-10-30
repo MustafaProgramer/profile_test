@@ -41,6 +41,9 @@ dependencies:
   progress_indicators:
   image_picker: 
   image_cropper:
+  dio:
+  latlong:
+   
 dev_dependencies:  
   flutter_test:
     sdk: flutter

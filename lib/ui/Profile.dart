@@ -11,7 +11,7 @@ import './path.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:image_picker/image_picker.dart';
 import 'image_picker_handler.dart';
-
+import 'package:firebase_storage/firebase_storage.dart';
 /*
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.camera);
@@ -21,6 +21,45 @@ import 'image_picker_handler.dart';
     });
   }
 */
+bool finished = false;
+Future _uploadFile(File _image) async {
+  finished = false;
+  FirebaseStorage storage = FirebaseConfig1.getStorage();
+  final Directory systemTempDir = Directory.systemTemp;
+  //final File file = await File('${systemTempDir.path}/${_image.path}').create();
+  var now = new DateTime.now();
+  var time = now.hour.toString() +
+      ":" +
+      now.minute.toString() +
+      ":" +
+      now.second.toString() +
+      now.millisecond.toString();
+  print(time);
+  print(systemTempDir);
+  print(_image.absolute);
+
+
+
+
+  StorageReference ref = storage.ref().child(time);
+
+   StorageUploadTask uploadTask = ref.putFile(
+    _image,
+  );
+
+
+   var i =0;
+  do {
+print("waiting");
+  i++;
+  } while (i!= 10000);
+
+   if( finished == true )
+  print("finished is true now");
+   else print(
+    "finished is noooooooooooot true yet" );
+}
+
 class ProfileTwoPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -35,7 +74,7 @@ class ProfileTwoState extends State<ProfileTwoPage>
   Size deviceSize;
   FirebaseUser user;
   Firestore firestore;
- 
+
   TextEditingController _name = new TextEditingController();
   TextEditingController _email = new TextEditingController();
   TextEditingController _phone = new TextEditingController();
@@ -56,11 +95,10 @@ class ProfileTwoState extends State<ProfileTwoPage>
   AssetImage avaImage = AssetImage('assets/default-avatar.png');
   AssetImage bannerImage = AssetImage('assets/images/banner.jpg');
   bool banEdit = false;
-    bool avatEdit = false;
+  bool avatEdit = false;
 // ----------------- Initial state function -------------------------
   @override
   void initState() {
-  
     user = UserDetails.getUser();
     super.initState();
     _controller = new AnimationController(
@@ -87,10 +125,9 @@ class ProfileTwoState extends State<ProfileTwoPage>
   @override
   userImage(File _image) {
     setState(() {
-      if(avatEdit)
-      this._image = _image;
-      else if(banEdit)
-      this._banimage = _image;
+      if (avatEdit)
+        this._image = _image;
+      else if (banEdit) this._banimage = _image;
     });
   }
 
@@ -100,13 +137,13 @@ class ProfileTwoState extends State<ProfileTwoPage>
         Firestore.instance.collection("Driver").document(user.uid);
     var ref = await docRef.get();
     var data = ref.data;
-      UserDetails.setDetails(data);
-_name.text = data["D_Name"];
-        _email.text = data["D_Email"];
-        _phone.text = data["D_Phone"];
-        _conpany.text = data["D_Company"];
-        _locations.text = data["D_Locations"];
-        _discription.text = data['D_Discrip'];
+    UserDetails.setDetails(data);
+    _name.text = data["D_Name"];
+    _email.text = data["D_Email"];
+    _phone.text = data["D_Phone"];
+    _conpany.text = data["D_Company"];
+    _locations.text = data["D_Locations"];
+    _discription.text = data['D_Discrip'];
     //return ref;
   }
 
@@ -329,18 +366,17 @@ _name.text = data["D_Name"];
 
     var _avaLink = null;
     //https://cdn.iconscout.com/icon/free/png-256/avatar-375-456327.png
-    var _bannerLink=null;
+    var _bannerLink = null;
     bool exist;
-    
 
     Widget profileHeader() => Container(
           decoration: new BoxDecoration(
               image: new DecorationImage(
             image: (_bannerLink != null)
-                          ? NetworkImage(_bannerLink)
-                            : _banimage != null 
-                                ? new ExactAssetImage(_banimage.path)
-                                : bannerImage,
+                ? NetworkImage(_bannerLink)
+                : _banimage != null
+                    ? new ExactAssetImage(_banimage.path)
+                    : bannerImage,
             fit: BoxFit.cover,
           )),
           height: deviceSize.height / 3.2,
@@ -356,9 +392,10 @@ _name.text = data["D_Name"];
                         child: InkWell(
                           enableFeedback: editing ? true : false,
                           onTap: () {
-                           
-                            (!editing) ? null :  banEdit = true;
-                            avatEdit = false; imagePicker.showDialog(context);
+                            (!editing) ? null : banEdit = true;
+                            avatEdit = false;
+                            editing ?
+                            imagePicker.showDialog(context):null;
                           },
                           child: Icon(
                             Icons.add_a_photo,
@@ -375,16 +412,17 @@ _name.text = data["D_Name"];
                     child: InkWell(
                       enableFeedback: editing ? true : false,
                       onTap: () {
-                       
-                        (!editing) ? null :  avatEdit = true;
-                        banEdit = false; imagePicker.showDialog(context);
+                        (!editing) ? null : avatEdit = true;
+                        banEdit = false;
+                         editing ?
+                            imagePicker.showDialog(context):null;
                       },
                       child: CircleAvatar(
                         child: editing ? Icon(Icons.add_a_photo) : null,
                         radius: 40.0,
                         backgroundImage: (_avaLink != null)
-                          ? NetworkImage(_avaLink)
-                            : _image != null 
+                            ? NetworkImage(_avaLink)
+                            : _image != null
                                 ? new ExactAssetImage(_image.path)
                                 : avaImage,
                       ),
@@ -512,7 +550,10 @@ _name.text = data["D_Name"];
         title: new Text("Profile"),
       ),
       body: Center(child: bodyData()),
-      
+      floatingActionButton: FlatButton(
+        child: Icon(Icons.add_circle),
+        onPressed: () => _uploadFile(_image),
+      ),
     );
   }
 }

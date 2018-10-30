@@ -62,13 +62,18 @@ class GMapsState extends State<GMaps> {
             // print("Name:" + data.data["S_Home"]["P_Name"]);
             //_stLoc.add({"Lat":data.data["S_Home"]["Lat"],"Long":data.data["S_Home"]["Long"]});
             _stLoc.add(data.data);
-            print(_stLoc);
+            
+           
+            //print(_stLoc);
             _stLoc.forEach((st) {
+               
               _add(st["S_Home"]["Lat"], st["S_Home"]["Long"], st["S_Name"],
                   st["S_Phone"]);
             });
           });
+         
         });
+         Students.setStudents(_stLoc);
       });
       return true;
     });
