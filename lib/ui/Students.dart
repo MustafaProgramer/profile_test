@@ -21,6 +21,7 @@ class _StudentListState extends State<StudentList>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       appBar: new AppBar(
         title: new Text("Student List"),
         centerTitle: true,
