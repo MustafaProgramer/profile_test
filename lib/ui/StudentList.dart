@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:location/location.dart';
 import 'package:dio/dio.dart';
 import 'package:latlong/latlong.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 class StudentsList extends StatefulWidget {
   _StudentsListState createState() => _StudentsListState();
 }
@@ -74,6 +74,7 @@ class _StudentsListState extends State<StudentsList> {
   }
 
   TextEditingController _searchInput = new TextEditingController();
+  
   Widget searchBar() => new Card(
           child: new TextField(
         onChanged: (v) {
@@ -147,20 +148,35 @@ class _StudentsListState extends State<StudentsList> {
                           list[i]["S_Name"],
                           style: new TextStyle(fontWeight: FontWeight.bold),
                         ),
+                        
                         new Text(
                           dummyData[i].time,
                           style:
                               new TextStyle(color: Colors.grey, fontSize: 14.0),
                         ),
+                        
                       ],
                     ),
                     subtitle: new Container(
-                      padding: const EdgeInsets.only(top: 5.0),
-                      child: new Text(
+                      padding: const EdgeInsets.only(top: 2.0),
+                      child: new Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          new Text(
                         list[i]["S_Home"]["P_Name"],
                         style:
                             new TextStyle(color: Colors.grey, fontSize: 15.0),
                       ),
+                      new InkWell(
+                        child: Icon(Icons.call),
+                        onTap:()=> launch("tel://${list[i]["S_Phone"]}"),
+                      ),
+                     
+
+
+                        ],
+                      ) ,
+                      
                     ),
                   )
                 ],

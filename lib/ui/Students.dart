@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import './data/Firebase.dart';
 import 'StudentList.dart';
+import './Route.dart';
 class StudentList extends StatefulWidget {
   _StudentListState createState() => _StudentListState();
 }
@@ -42,7 +43,7 @@ class _StudentListState extends State<StudentList>
         controller: _tabcontroller,
         children: <Widget>[
           StudentsList(),
-          new Center(child: new Text("Second")),
+          StRoute(),
         ],
       ),
     );
